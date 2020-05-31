@@ -1,7 +1,8 @@
 from SerialProtocolSimple import SerialProtocol
 
-port = '/dev/ttyACM0'
 port = 'COM4'
+port = '/dev/ttyACM0'
+
 brate = 9600
 verbose = True
 
