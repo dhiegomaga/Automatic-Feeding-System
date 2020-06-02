@@ -1,4 +1,5 @@
 from SerialProtocolSimple import SerialProtocol
+import time
 
 port = '/dev/ttyACM0'
 port = 'COM3'
@@ -12,6 +13,7 @@ try:
     protocol.start()
 
     while True:
+
         in_str = input("Type a command: ")
         strs = in_str.split(' ')
 
@@ -23,6 +25,12 @@ try:
 
             else:
                 print("Wrong command format")
+
+            time.sleep(0.1) # Sleep to let text of interaction be written
+
+            # Test if thread is still running
+            if not protocol.isAlive():
+                raise Exception("FATAL ERROR, TERMINATING")
 
         except RuntimeError as e:
             print(e)

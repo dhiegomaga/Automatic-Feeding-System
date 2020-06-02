@@ -107,7 +107,7 @@ class SerialProtocol:
         self.commands   = queue.Queue()
 
         # Hard-coded Parameters 
-        self.PACKAGE_DELAY      = 0.050 # Sleep time between sending packages, in seconds
+        self.PACKAGE_DELAY      = 0.005 # Sleep time between sending packages, in seconds
         self.MAX_TRIALS         = 3     # Max communication attempts before giving up 
         self.COMMAND_QUEUE_SIZE = 3     # Max number of commands in queue
 
@@ -142,6 +142,10 @@ class SerialProtocol:
         self.running = True
         self.connect()
         self.main_loop.start() # Starts talking thread
+
+    def isAlive(self):
+        self.main_loop.join(timeout=0.0)
+        return self.main_loop.is_alive()
 
     # Wait until PIC sends IWT and answers IWR
     def connect(self):
@@ -321,13 +325,17 @@ class SerialProtocol:
         if self.verbose:
             print("Executing SET command")
 
+        # Clears serial buffer
+        self.ser.reset_input_buffer()
+        self.ser.reset_output_buffer()
+
         # Send commands
         self.send_byte(command)
         time.sleep(self.PACKAGE_DELAY)
         self.send_byte(value)
 
         # Waits for ACK
-        byte = self.read_byte()
+        byte = self.read_blocking()
 
         if byte == pbytes['ACK']:
             # TODO save state
