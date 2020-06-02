@@ -94,6 +94,8 @@ pbytes = {
     'IWR': b'\xCB'
 }
 
+inverse_pbytes = {v: k for k, v in pbytes.items()}
+
 class SerialProtocol:
 
     # Initialize variables and serial communication object
@@ -117,9 +119,12 @@ class SerialProtocol:
             self.ser = serial.Serial(port, brate, timeout=0) # timeout=None: wait forever until byte is read
             self.ser.close()
             self.ser.open()
+            time.sleep(0.1)
+            self.ser.reset_input_buffer()
+            self.ser.reset_output_buffer()
 
             # Start talker thread
-            self.main_loop = threading.Thread(target=SerialProtocol.talk_loop_thread, args = (self))
+            self.main_loop = threading.Thread(target=SerialProtocol.talk_loop_thread, args = (self,) )
             self.main_loop.daemon = True
 
         except Exception as e:
@@ -157,22 +162,33 @@ class SerialProtocol:
                     self.send_byte(pbytes['ACK'])
                     break
 
+                elif byte == pbytes['IDWT']:
+                    self.send_byte(pbytes['ACK'])
+
             self.talking = True
-            self.ser.flush()
+            if self.verbose:
+                print("Talking resumed")
+
+            self.ser.reset_input_buffer()
+            self.ser.reset_output_buffer()
 
             # Read 2 bytes
             self.send_byte(pbytes['IWR'])
             temp1 = self.read_blocking()
 
             if temp1 == pbytes['IWT']:
+                self.send_byte(pbytes['ACK'])
                 continue
 
             temp2 = self.read_blocking()
 
             if temp2 == pbytes['IWT']:
+                self.send_byte(pbytes['ACK'])
                 continue
 
             if self.in_range(temp1) and self.in_range(temp2):
+                if self.verbose:
+                    print("Connected")
                 return True
 
             if self.verbose:
@@ -195,7 +211,7 @@ class SerialProtocol:
         
         # Loops while self.running is active
         while self.running:
-            self.ser.flush()
+
             if self.talking:
                 # SET NEXT COMMAND TO BE EXECUTED
                 next_command = None
@@ -233,8 +249,12 @@ class SerialProtocol:
                             print("Failed to execute command")
                     
                 else: # no commands to be executed
-                    data = self.read_byte()
+                    byte = self.read_byte()
                     if byte == pbytes['IDWT']:
+                        self.send_byte(pbytes['ACK'])
+
+                        if self.verbose:
+                            print("Talking paused")
                         self.talking = False
 
             else: # PIC not talking
@@ -243,21 +263,31 @@ class SerialProtocol:
                 byte = self.read_byte()
 
                 if byte == pbytes['IWT']:
-                    self.talking = True
                     self.send_byte(pbytes['ACK'])
+
+                    if self.verbose:
+                        print("Talking resumed")
+                    self.talking = True
                     
             time.sleep(self.PACKAGE_DELAY)
 
     # Puts a command in queue
     # command: the command in byte form
     # value: optional value
-    def put_command(self, command, value):
+    def put_command(self, command_str, value):
+        global pbytes
+
         if self.commands.qsize() >= self.COMMAND_QUEUE_SIZE:
-            raise BufferError("Max number of commands in queue reached")
+            raise RuntimeError("Max number of commands in queue reached")
         
         # Convert int to byte
         if type(value) == int:
             value = bytes([value])
+
+        # Convert command from string to byte
+        if command_str not in pbytes:
+            raise RuntimeError("Command not found: ", command_str)
+        command = pbytes[command_str]
 
         # Check type of value and command
         assert type(command) == bytes, 'put_command() command must be bytes or int'
@@ -268,6 +298,10 @@ class SerialProtocol:
     # Executes read command, returns True if read was successful
     def execute_read_command(self):
         global pbytes
+
+        if self.verbose:
+            print("Executing READ command")
+
         self.send_byte(pbytes['IWR'])
         temp1 = self.read_blocking()
         if not self.in_range(temp1):
@@ -283,6 +317,9 @@ class SerialProtocol:
     # Executes set command, returns true if set was successful
     def execute_set_command(self, command, value):
         global pbytes
+
+        if self.verbose:
+            print("Executing SET command")
 
         # Send commands
         self.send_byte(command)
@@ -307,23 +344,39 @@ class SerialProtocol:
 
     # Sends 1 byte
     def send_byte(self, byte):
+        global inverse_pbytes
+
         self.ser.write(byte)
         if self.verbose:
-            print("SENT DATA: ", byte)
+            if byte in inverse_pbytes:
+                print("SENT DATA: ", inverse_pbytes[byte])
+            else:
+                print("SENT DATA: ", ord(byte))
 
     # Reads 1 byte, returns (byte, status)
     def read_byte(self):
+        global inverse_pbytes
+
         recv_data = self.ser.read(1)
         if self.verbose and recv_data != b'':
-            print("RECV DATA: ", recv_data)
+            if recv_data in inverse_pbytes:
+                print("READ DATA: ", inverse_pbytes[recv_data])
+            else:
+                print("READ DATA: ", ord(recv_data))
+
         return recv_data
 
     def read_blocking(self):
+        global inverse_pbytes
+
         recv_data = self.ser.read(1)
         while recv_data == b'\x00' or recv_data == b'':
             recv_data = self.ser.read(1)
 
         if self.verbose:
-            print("RECV DATA: ", recv_data)
+            if recv_data in inverse_pbytes:
+                print("READ DATA: ", inverse_pbytes[recv_data])
+            else:
+                print("READ DATA: ", ord(recv_data))
 
         return recv_data

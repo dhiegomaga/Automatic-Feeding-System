@@ -43,7 +43,7 @@ void main(void) {
         uint8_t hs = SerStartEnd(IWT, 50000);
       
         CCP4_SetTimer(10000); //10ms
-        for(int i = 0; i < 750; i++){
+        for(int i = 0; i < 3750; i++){
             CCP4_SetTimer(10000); //reset flags and set 10ms
             while(!(CCP4_F)){ //10ms time window inside for(75)
 
@@ -70,7 +70,7 @@ void main(void) {
           
         } //for 750ms
         hs = SerStartEnd(IDWT, 50000);
-        __delay_ms(2000); // IDWT time window
+        __delay_ms(1000); // IDWT time window
    
         
     } //while 42

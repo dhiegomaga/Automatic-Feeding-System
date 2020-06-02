@@ -1,10 +1,11 @@
 from SerialProtocolSimple import SerialProtocol
 
-port = 'COM4'
 port = '/dev/ttyACM0'
+port = 'COM3'
 
 brate = 9600
 verbose = True
+protocol = None
 
 try:
     protocol = SerialProtocol(port, brate, verbose)
@@ -13,25 +14,31 @@ try:
     while True:
         in_str = input("Type a command: ")
         strs = in_str.split(' ')
-        if len(strs) == 2: # Set command
-            command = strs[0] 
-            if command == 'cps':
-                speed = int(strs[1])
 
+        try:
+            if len(strs) == 2: # Set command 
+                command = strs[0]
+                speed = int(strs[1])
                 protocol.put_command(command, speed)
+
+            else:
+                print("Wrong command format")
+
+        except RuntimeError as e:
+            print(e)
+
+        except ValueError as e:
+            print("Invalid command value")
 
 except KeyboardInterrupt:
     # User kyeboard interrupt
     print("Keyboard interrupt. ")
-
-except BufferError as e:
-    # Max number of commands reached
-    print(e) 
 
 except Exception as e: 
     # Unhandled error
     print(e) 
 
 finally: 
-    protocol.close() # Close port
+    if protocol:
+        protocol.close() # Close port
     print("Exiting")

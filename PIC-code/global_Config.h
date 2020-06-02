@@ -23,7 +23,7 @@
 
 //Codes
 /* debugging codes */
-
+/*
 #define ACK         97 //101 //Both: acknowledged
 #define NACK        110 //Both: Not acknowledged. old: 102; new: 0 because 0 means nothing, easier to check
 
@@ -38,9 +38,9 @@
 
 #define FRAERR      70//204 //PIC: Framing Error, Restart Communication, last byte is lost
 #define OVERERR     79//205 //PIC: Overrun Error, Restart Communication, last byte is lost
+*/
 
-
-/* production codes 
+/* production codes */
 #define ACK         101 //101 //Both: acknowledged
 #define NACK        102 //Both: Not acknowledged. old: 102; new: 0 because 0 means nothing, easier to check
 
@@ -56,7 +56,7 @@
 #define FRAERR      0//204 //PIC: Framing Error, Restart Communication, last byte is lost
 #define OVERERR     0//205 //PIC: Overrun Error, Restart Communication, last byte is lost
  
- */
+ /**/
 /******************************************************************************/
 //PWM
 /******************************************************************************/
