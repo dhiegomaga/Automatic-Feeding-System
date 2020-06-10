@@ -30,7 +30,7 @@
     - End communication window (sent by PIC)
 
     203: iwr
-    - Read current system state (sent by RPI)
+    - Read current system tempratures (sent by RPI)
 
 -------COMMUNICATION EXAMPLES--------
     PIC (left) - RPI (right)
@@ -113,6 +113,9 @@ class SerialProtocol:
 
         # Other variables
         self.pending_command = None
+        self.temp0 = 0
+        self.temp1 = 0
+        self.temp2 = 0
 
         try:
             # Open port
@@ -176,8 +179,14 @@ class SerialProtocol:
             self.ser.reset_input_buffer()
             self.ser.reset_output_buffer()
 
-            # Read 2 bytes
+            # Read 3 bytes
             self.send_byte(pbytes['IWR'])
+            temp0 = self.read_blocking()
+
+            if temp0 == pbytes['IWT']:
+                self.send_byte(pbytes['ACK'])
+                continue
+
             temp1 = self.read_blocking()
 
             if temp1 == pbytes['IWT']:
@@ -299,6 +308,10 @@ class SerialProtocol:
 
         self.commands.put((command, value))
     
+    # Reads temperature state
+    def getState(self):
+        return [self.temp0, self.temp1, self.temp2]
+
     # Executes read command, returns True if read was successful
     def execute_read_command(self):
         global pbytes
@@ -307,6 +320,11 @@ class SerialProtocol:
             print("Executing READ command")
 
         self.send_byte(pbytes['IWR'])
+
+        temp0 = self.read_blocking()
+        if not self.in_range(temp0):
+            return False
+
         temp1 = self.read_blocking()
         if not self.in_range(temp1):
             return False
@@ -315,7 +333,9 @@ class SerialProtocol:
         if not self.in_range(temp2):
             return False
 
-        # TODO save temps
+        self.temp0 = temp0
+        self.temp1 = temp1
+        self.temp2 = temp2
         return True
 
     # Executes set command, returns true if set was successful
