@@ -4,11 +4,51 @@
       <link rel="stylesheet" href='../static/style.css'/>
    </head>
    <body>
-		<h1>Actuators</h1>
-		<h2> Status </h2>
+        
+        <div class="content">
+            <div class="row">
+                <div>
+                    System State
+                </div>
+                <div>
+                    <div class="button" onclick="state()">{{ system_state }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    TEMP0
+                </div>
+                <div>
+                {{temp0}} ℃
+                </div>
+                
+            </div>
+            <div class="row">
+                <div>
+                    TEMP1
+                </div>
+                <div>
+                {{temp1}} ℃
+                </div>
+                
+            </div>
+            
+            <div class="row">
+                <div>
+                    Pump Speed
+                </div>
+                <div class="flex-inline">
+                    <input type="number" id="cooler_input_temp" name="cooler" min="0" max="100">
+                    <div class="button" onclick="setPumpSpeed(document.getElementById('cooler_input_temp').value)">SET</div>
+                </div>
+                
+            </div>
+            
+        </div>
+
 		<h3> TEMP0 ==>  {{ temp0  }}</h3>
 		<br>
-		<h2> Commands </h2>
 		<h3> 
 			RED LED Ctrl ==> 
 			<div class="button" onclick="clickButton()">{{ system_state }}</div>  
@@ -20,6 +60,10 @@
 		</h3>
 	
     <script>
+
+        window.onload = function() {
+            document.getElementById('cooler_input_temp').value = {{pump_set}}
+        };
 
         function setPumpSpeed(speed){
             var xmlhttp = new XMLHttpRequest();
@@ -52,6 +96,22 @@
             xmlhttp.open("GET", url, true);
             xmlhttp.setRequestHeader("Content-Type", "application/json");
             xmlhttp.send();
+        }
+        function state(){
+            var xmlhttp = new XMLHttpRequest();
+            var url = "/state";
+
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var myArr = JSON.parse(this.responseText);
+                    console.log("Got response")
+                    location.reload();
+                }
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.send();
+
         }
     
     </script>
