@@ -1,6 +1,7 @@
 body {
     background: blue;
     color: yellow;
+    font-size: 1.5rem!important;
 }
 .button {
     font: bold 15px Arial;
@@ -13,4 +14,30 @@ body {
     border-right: 1px solid #333333;
     border-bottom: 1px solid #333333;
     border-left: 1px solid #cccccc;
+}
+
+.content{
+    display: flex;
+    flex-direction: column;
+    width: 27rem;
+    height:80%;
+    margin-top:1rem;
+    border: 1px solid red;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.row{
+    display:flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+}
+
+.flex-inline{
+    display:flex;
+    flex-direction: row;
+    margin-left: 0.5rem;
 }
