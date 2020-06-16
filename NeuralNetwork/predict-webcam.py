@@ -1,5 +1,6 @@
 GPU = False
 LIST_WEBCAMS=False
+CAM_INDEX=2
 
 import os
 if not GPU:
@@ -88,7 +89,7 @@ last_time = time.time()
 try:
     cv2.namedWindow("test")
     
-    cam = cv2.VideoCapture(0)
+    cam = cv2.VideoCapture(CAM_INDEX)
 
     while True:
         ret, img_bgr = cam.read()

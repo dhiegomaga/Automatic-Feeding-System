@@ -1,11 +1,11 @@
 from SerialProtocolSimple import SerialProtocol
 import time
 
-port = '/dev/ttyACM0'
 port = 'COM3'
+port = '/dev/ttyACM0'
 
 brate = 9600
-verbose = True
+verbose = False
 protocol = None
 
 try:

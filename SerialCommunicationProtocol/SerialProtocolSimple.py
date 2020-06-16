@@ -336,6 +336,11 @@ class SerialProtocol:
         self.temp0 = temp0
         self.temp1 = temp1
         self.temp2 = temp2
+
+        print("temp0:",ord(temp0))
+        print("temp1:",ord(temp1))
+        print("temp2:",ord(temp2))
+
         return True
 
     # Executes set command, returns true if set was successful
