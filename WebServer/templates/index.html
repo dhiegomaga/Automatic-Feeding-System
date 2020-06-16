@@ -8,10 +8,21 @@
         <div class="content">
             <div class="row">
                 <div>
-                    System State
+                    system state
                 </div>
                 <div>
                     <div class="button" onclick="state()">{{ system_state }}</div>
+                </div>
+            </div>
+            <div class="row">
+                <div>
+                    Robot Arm
+                </div>
+                <div>
+                    <!-- <div class="button" onclick="Robot()">{{ Robot_Arm }}</div> -->
+                    <div class="button" onclick="Robot()">GO</div> 
+                    <div class="button" onclick="Robot()">Back</div>
+                    
                 </div>
             </div>
 
@@ -33,21 +44,62 @@
                 </div>
                 
             </div>
+            <div class="row">
+                <div>
+                    TEMP2
+                </div>
+                <div>
+                {{temp2}} ℃
+                </div>
+                
+            </div>
+            <div class="row">
+                <div>
+                    Birds
+                </div>
+                <div>
+                {{Birds}} Birds
+                </div>
+                
+            </div>
             
+
             <div class="row">
                 <div>
                     Pump Speed
                 </div>
                 <div class="flex-inline">
-                    <input type="number" id="cooler_input_temp" name="cooler" min="0" max="100">
-                    <div class="button" onclick="setPumpSpeed(document.getElementById('cooler_input_temp').value)">SET</div>
+                    <input type="number" id="pumpspeed_input_temp" name="cooler" min="0" max="100">
+                    <div class="button" onclick="setPumpSpeed(document.getElementById('pumpspeed_input_temp').value)">SET</div>
                 </div>
                 
             </div>
             
+            <div class="row">
+                <div>
+                    cooler
+                </div>
+                <div class="flex-inline">
+                    <input type="number" id="cooler_input_temp" name="cooler" min="-20" max="80">
+                    <div class="button" onclick="set_cooler_temp(document.getElementById('cooler_input_temp').value)">SET</div>
+                </div>
+                
+                
+            </div>
+            <div class="row">
+                <div>
+                    heater
+                </div>
+                <div class="flex-inline">
+                    <input type="number" id="heater_input_temp" name="heater" min="-20" max="80">
+                    <div class="button" onclick="heater_input_temp(document.getElementById('heater_input_temp').value)">SET</div>
+                </div>
+            </div>
+        
         </div>
+            
 
-		<h3> TEMP0 ==>  {{ temp0  }}</h3>
+		<!-- <h3> TEMP0 ==>  {{ temp0  }}</h3>
 		<br>
 		<h3> 
 			RED LED Ctrl ==> 
@@ -57,12 +109,15 @@
         <h3> 
 			Current pump speed: {{ pump_set }} ==> 
 			<div class="button" onclick='setPumpSpeed(20)'> SET </div>  
-		</h3>
+		</h3> -->
 	
     <script>
 
         window.onload = function() {
-            document.getElementById('cooler_input_temp').value = {{pump_set}}
+            // Update initial state
+            document.getElementById('pumpspeed_input_temp').value = {{pump_set}}
+            document.getElementById('cooler_input_temp').value = {{cooler_set}}
+            document.getElementById('heater_input_temp').value = {{heater_set}}
         };
 
         function setPumpSpeed(speed){
@@ -81,10 +136,10 @@
             xmlhttp.setRequestHeader("Content-Type", "application/json");
             xmlhttp.send(data);
         }
-
-        function clickButton(){
+        function set_cooler_temp(temp){
             var xmlhttp = new XMLHttpRequest();
-            var url = "/debug";
+            var url = "/setCoolerTemp";
+            var data = JSON.stringify({"value":temp});
 
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
@@ -93,10 +148,42 @@
                     location.reload();
                 }
             };
-            xmlhttp.open("GET", url, true);
+            xmlhttp.open("POST", url, true);
             xmlhttp.setRequestHeader("Content-Type", "application/json");
-            xmlhttp.send();
+            xmlhttp.send(data);
         }
+        function heater_input_temp(temp){
+            var xmlhttp = new XMLHttpRequest();
+            var url = "/setHeaterTemp";
+            var data = JSON.stringify({"value":temp});
+
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var myArr = JSON.parse(this.responseText);
+                    console.log("Got response")
+                    location.reload();
+                }
+            };
+            xmlhttp.open("POST", url, true);
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.send(data);
+        }
+
+        // function clickButton(){
+        //     var xmlhttp = new XMLHttpRequest();
+        //     var url = "/debug";
+
+        //     xmlhttp.onreadystatechange = function() {
+        //         if (this.readyState == 4 && this.status == 200) {
+        //             var myArr = JSON.parse(this.responseText);
+        //             console.log("Got response")
+        //             location.reload();
+        //         }
+        //     };
+        //     xmlhttp.open("GET", url, true);
+        //     xmlhttp.setRequestHeader("Content-Type", "application/json");
+        //     xmlhttp.send();
+        // }
         function state(){
             var xmlhttp = new XMLHttpRequest();
             var url = "/state";
@@ -111,10 +198,42 @@
             xmlhttp.open("GET", url, true);
             xmlhttp.setRequestHeader("Content-Type", "application/json");
             xmlhttp.send();
-
         }
+        function Robot(){
+            var xmlhttp = new XMLHttpRequest();
+            var url = "/Robot";
+
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var myArr = JSON.parse(this.responseText);
+                    console.log("Got response")
+                    location.reload();
+                }
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.send();
+        }
+
+        // function Robot(){
+            // var xmlhttp = new XMLHttpRequest();
+            // var url = "/Robot";
+
+            // xmlhttp.onreadystatechange = function() {
+                // if (this.readyState == 4 && this.status == 200) {
+                    // var myArr = JSON.parse(this.responseText);
+                    // console.log("Got response")
+                    // location.reload();
+                // }
+            // };
+            // xmlhttp.open("GET", url, true);
+            // xmlhttp.setRequestHeader("Content-Type", "application/json");
+            // xmlhttp.send();
+// cd
+        // }
     
     </script>
 
    </body>
 </html>
+
