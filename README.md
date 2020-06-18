@@ -20,3 +20,21 @@ We also made a web interface to interact with the system, that can be used on th
 <p align="left">
   <img width="550" src="images/system-diagram.jpeg">
 </p>
+
+## Modules
+
+### Webserver
+
+We make a user-friendly interface via web server to control the system and access the variables
+
+<p align="left">
+  <img height="300" src="images/webserver.png">
+</p>
+
+### Electric Circuit
+
+<p align="left">
+  <img width="550" src="images/circuit.jpeg">
+</p>
+
+We created a PCB to solder the main electrical components, including the microcontroller, the PWM control signal pins for the Pump, Heater and Cooling elements, as well as MOSFET's for supplying current.
