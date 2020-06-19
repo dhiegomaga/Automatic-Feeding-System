@@ -19,109 +19,63 @@
 // ~1~~~~~~~~~~~~1~
 // min output: ! = 33 = 0,3V
 // !~!~!~!~~!~!~!~!
-// sending a few 8 byte angles as fast as possible
-
-//Notizen:
-//PWM: analogWrite(in pin, int value), freq = 1000Hz
-//      value 0-255 255:100% 
-//
-//Serial.readBytes(buffer, length)
-//
-//reads characters from the serial port into a buffer. The function terminates if the determined length has been read, or it times out (see Serial.setTimeout()).
-//Parameters
-//Serial: serial port object. See the list of available serial ports for each board on the Serial main page.
-//buffer: the buffer to store the bytes in. Allowed data types: array of char or byte.
-//length: the number of bytes to read. Allowed data types: int.
-//maual mode data format: PC sends angles for the servos in degree 
-//because 1 byte is 1 number the PC can send 0 to 254 degree. 1=0°, 255 = 254° 
-//that system might be chnaged later
-//
-/* Some ASCII values
- *  33  !
- *  50  2
- *  80  P
- *  100 d
- *  126 ~
- * 
- */
-
-/*********************************************************/
-
-/*
-#define PWM2_PIN 2
-#define PWM3_PIN 3
-#define PWM4_PIN 4
-#define PWM5_PIN 5
-#define PWM6_PIN 6
-#define PWM7_PIN 7
-#define PWM8_PIN 8
-#define PWM9_PIN 9
-*/
-
 //#define ACK 101
 //#define NACK 102
 
+#include <Servo.h>
+
 #define ACK 97
 #define NACK 110
-#define TIME_OUT_MS 1000
+#define TIME_OUT_MS 100
+#define NUM_SERVOS 5
 
-//first set REC_B_NUM to 2 then 1 and then 0 if it prints no extra byte in SerialReceiveAngles
-#define NUM_SERVOS 6
-
-long startTime = 0;
-
-const int pwmPins[NUM_SERVOS] = {2,3,4,5,6,7}; //(wanted) error if number of pins is bigger than NUM_SERVOS
-
-//uint8_t anglesDefault[NUM_SERVOS] = {0,0,0,0,0,0,0,0}; //check numbers!
-//uint8_t anglesEnd[NUM_SERVOS] = {0,0,0,0,0,0,0,0};
-//uint8_t anglesStart[NUM_SERVOS] = {0,0,0,0,0,0,0,0};
-//
-//uint8_t pwmEnd[NUM_SERVOS] = {0,0,0,0,0,0,0,0};
-//uint8_t pwmStart[NUM_SERVOS] = {0,0,0,0,0,0,0,0};
-
-uint8_t anglesEnd[NUM_SERVOS] = {0,0,0,0,0,0};
-uint8_t anglesStart[NUM_SERVOS] = {0,0,0,0,0,0};
-
-uint8_t pwmEnd[NUM_SERVOS] = {0,0,0,0,0,0};
-uint8_t pwmStart[NUM_SERVOS] = {0,0,0,0,0,0};
-
-uint8_t recErrF = 0; //Receiving Error flag. set to 1 if there is an error while receiving data
+Servo servos[NUM_SERVOS];
+const int pwmPins[NUM_SERVOS] = {2,3,4,5,6}; //(wanted) error if number of pins is bigger than NUM_SERVOS
+int angles[NUM_SERVOS] = {90,165,50,90,0}; // Initial angles
 
 //-------------------------------------------------------------------------------
 void setup() {
   //pinMode not needed 
  Serial.begin(115200);
  Serial.setTimeout(TIME_OUT_MS); //for debugging
+ for(int i=0; i< NUM_SERVOS; i++){
+    servos[i].attach(pwmPins[i]);
+    servos[i].write(angles[i]);
+  }
 
+  Serial.flush();
+  delay(500);
 }
 
 //-------------------------------------------------------------------------------
 
 void loop(){
   uint8_t bt[NUM_SERVOS-1];
-  uint8_t angles[NUM_SERVOS];
-  uint8_t c, pwm;
+  uint8_t c;
   c = Serial.readBytes(bt, 1);
   // Serial.println("Status: " + String(c) + ":   " + String(bt[0]) ); 
+  
   if(c != 0){
-    angles[0] = bt[0];
+    angles[0] = byteToAngle(bt[0]);
     c = Serial.readBytes(bt, NUM_SERVOS-1);
     if(c != NUM_SERVOS-1){
       sendNACK();
     } else {
 
       for(int i = 1; i < NUM_SERVOS; i++){
-        angles[i] = bt[i-1];
+        angles[i] = byteToAngle(bt[i-1]);
       }
-      
+
       //Set all PWM values
       for(int i = 0; i < NUM_SERVOS; i++){
-        pwm = ConvAngleToPWM(angles[i]);
-        analogWrite(pwmPins[i], pwm);
+        servos[i].write(angles[i]);
+        //Serial.println("Servo "+ String(i)+": "+String(angles[i]) );
       }
+      
       sendACK();
     }
   }
+
 }
 
 void sendACK(){
@@ -130,6 +84,11 @@ void sendACK(){
 
 void sendNACK(){
   Serial.write(NACK);
+}
+
+// Converts 0-255 to 0-180
+int byteToAngle(uint8_t bt){
+  return (int) bt * 0.705882f;
 }
 
 //-----------------------------------------------------------
@@ -153,11 +112,6 @@ uint8_t ConvAngleToPWM(uint8_t angle_par){
   return pwm_intern;
 }
 
-void SetAllPWM(void){
-  for(int i = 0; i < NUM_SERVOS; i++){
-    analogWrite(pwmPins[i], pwmEnd[i]);
-  }
-}
 
 
 
