@@ -156,8 +156,7 @@ class SerialProtocol:
 
         # Send IWR and wait for response
         while True:
-            if self.verbose:
-                print("Connecting. Waiting for IWT package...")
+            print("Connecting...")
 
             self.talking = False
             self.ser.flush()
@@ -200,8 +199,8 @@ class SerialProtocol:
                 continue
 
             if self.in_range(temp1) and self.in_range(temp2):
-                if self.verbose:
-                    print("Connected")
+                
+                print("Connected")
                 return True
 
             if self.verbose:
@@ -337,18 +336,16 @@ class SerialProtocol:
         self.temp1 = temp1
         self.temp2 = temp2
 
-        print("temp0:",ord(temp0))
-        print("temp1:",ord(temp1))
-        print("temp2:",ord(temp2))
+        # print("temp0:",ord(temp0))
+        # print("temp1:",ord(temp1))
+        # print("temp2:",ord(temp2))
 
         return True
 
     # Executes set command, returns true if set was successful
     def execute_set_command(self, command, value):
-        global pbytes
-
-        if self.verbose:
-            print("Executing SET command")
+        global pbytes, inverse_pbytes
+            
 
         # Clears serial buffer
         self.ser.reset_input_buffer()
@@ -364,7 +361,7 @@ class SerialProtocol:
 
         if byte == pbytes['ACK']:
             # TODO save state
-
+            print("Completed:",inverse_pbytes[command], ':',value[0])
             return True
 
         else: 

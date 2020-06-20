@@ -2,10 +2,19 @@
    <head>
       <title>GPIO Control</title>
       <link rel="stylesheet" href='../static/style.css'/>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
    </head>
    <body>
         
         <div class="content">
+            <div class="row">
+                <div>
+                    Refresh
+                </div>
+                <div>
+                    <div class="button" onclick="refresh()">↺</div>
+                </div>
+            </div>
             <div class="row">
                 <div>
                     system state
@@ -18,10 +27,9 @@
                 <div>
                     Robot Arm
                 </div>
-                <div>
-                    <!-- <div class="button" onclick="Robot()">{{ Robot_Arm }}</div> -->
-                    <div class="button" onclick="Robot()">GO</div> 
-                    <div class="button" onclick="Robot()">Back</div>
+                <div class="flex-inline">
+                    <div class="button" onclick="RobotGo()">GO</div> 
+                    <div class="button" onclick="RobotBack()">Back</div>
                     
                 </div>
             </div>
@@ -97,19 +105,6 @@
             </div>
         
         </div>
-            
-
-		<!-- <h3> TEMP0 ==>  {{ temp0  }}</h3>
-		<br>
-		<h3> 
-			RED LED Ctrl ==> 
-			<div class="button" onclick="clickButton()">{{ system_state }}</div>  
-		</h3>
-
-        <h3> 
-			Current pump speed: {{ pump_set }} ==> 
-			<div class="button" onclick='setPumpSpeed(20)'> SET </div>  
-		</h3> -->
 	
     <script>
 
@@ -119,6 +114,22 @@
             document.getElementById('cooler_input_temp').value = {{cooler_set}}
             document.getElementById('heater_input_temp').value = {{heater_set}}
         };
+
+        function refresh(){
+            var xmlhttp = new XMLHttpRequest();
+            var url = "/update";
+
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var myArr = JSON.parse(this.responseText);
+                    console.log("Update")
+                    location.reload();
+                }
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.send();
+        }
 
         function setPumpSpeed(speed){
             var xmlhttp = new XMLHttpRequest();
@@ -199,14 +210,14 @@
             xmlhttp.setRequestHeader("Content-Type", "application/json");
             xmlhttp.send();
         }
-        function Robot(){
+        function RobotGo(){
             var xmlhttp = new XMLHttpRequest();
-            var url = "/Robot";
+            var url = "/robot_go";
 
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var myArr = JSON.parse(this.responseText);
-                    console.log("Got response")
+                    console.log("Robot go success")
                     location.reload();
                 }
             };
@@ -215,22 +226,21 @@
             xmlhttp.send();
         }
 
-        // function Robot(){
-            // var xmlhttp = new XMLHttpRequest();
-            // var url = "/Robot";
+        function RobotBack(){
+            var xmlhttp = new XMLHttpRequest();
+            var url = "/robot_back";
 
-            // xmlhttp.onreadystatechange = function() {
-                // if (this.readyState == 4 && this.status == 200) {
-                    // var myArr = JSON.parse(this.responseText);
-                    // console.log("Got response")
-                    // location.reload();
-                // }
-            // };
-            // xmlhttp.open("GET", url, true);
-            // xmlhttp.setRequestHeader("Content-Type", "application/json");
-            // xmlhttp.send();
-// cd
-        // }
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var myArr = JSON.parse(this.responseText);
+                    console.log("Robot back success")
+                    location.reload();
+                }
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.send();
+        }
     
     </script>
 
