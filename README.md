@@ -5,7 +5,7 @@ An automated feeding system for baby birds.
 [First prototype test](https://www.youtube.com/watch?v=i5xlb1sEyUY)
 
 <p align="left">
-  <img width="550" src="images/preview.gif">
+  <img width="550" src="images/preview.gif"><br>
   <i>Feeding orphaned baby birds is a manual task, which we aim to automate on this project</i>
 </p>
 
