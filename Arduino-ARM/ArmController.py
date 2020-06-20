@@ -26,7 +26,7 @@ class ArmController:
             self.current_angles = starting_angles
 
             # Define angle writing speed
-            self.delta_angle = 1
+            self.delta_angle = 2
             self.delta_time  = 0.02
 
             # Start talker thread
@@ -133,7 +133,7 @@ class ArmController:
     def write_angles(self, angles):
         global MIN_ANGLE, MAX_ANGLE
         angles = [self.clamp(x*1.41667, MIN_ANGLE, MAX_ANGLE) for x in angles]
-        print("Writing angles: ", angles)
+        # print("Writing angles: ", angles)
         byte_angles = bytes(angles)
         self.ser.write(byte_angles)
 
