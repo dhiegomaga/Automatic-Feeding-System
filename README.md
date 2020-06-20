@@ -15,7 +15,7 @@ An automated feeding system for baby birds.
   <img width="550" src="images/block-diagram.png">
 </p>
 
-The goal of this project is to automate the process of feeding baby birds. The system overview is shown bellow. It's composed of 4 main parts:
+The goal of this project is to automate the process of feeding baby birds. The system overview is shown. It's composed of 4 main parts:
 
 -   The stainless steel food container, that has to be kept cooled
 -   The pump system, that pushes the food up to the bird when needed
@@ -56,4 +56,8 @@ We created a PCB to solder the main electrical components, including the microco
 
 ### Robot Arm
 
-Is used to direct the feeding hose to the birds mouth.
+<p align="left">
+  <img height="400" src="images/robot_arm.jpg">
+</p>
+
+Is used to direct the feeding hose to the birds mouth. We wrote the Arduino Due's driver's as well as the Linux drivers in python to communicate with the arduino via USB (serial communication).
