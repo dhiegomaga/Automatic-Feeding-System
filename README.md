@@ -2,6 +2,8 @@
 
 An automated feeding system for baby birds.
 
+[Video](https://www.youtube.com/watch?v=6FqtNmXnx0E)
+
 [First prototype test](https://www.youtube.com/watch?v=i5xlb1sEyUY)
 
 <p align="left">
