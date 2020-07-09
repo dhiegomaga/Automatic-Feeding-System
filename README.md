@@ -12,7 +12,7 @@ An automated feeding system for baby birds.
 </p>
 
 <p align="left">
-  <img width="550" src="images/bird-feeding.gif">
+  <img width="500" src="images/bird-feeding.gif">
 </p>
 
 ## Description and System Overview
