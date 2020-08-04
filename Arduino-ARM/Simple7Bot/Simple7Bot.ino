@@ -53,7 +53,7 @@ void loop(){
   uint8_t bt[NUM_SERVOS-1];
   uint8_t c;
   c = Serial.readBytes(bt, 1);
-  // Serial.println("Status: " + String(c) + ":   " + String(bt[0]) ); 
+  //Serial.println("Status: " + String(c) + ":   " + String(bt[0]) ); 
   
   if(c != 0){
     angles[0] = byteToAngle(bt[0]);

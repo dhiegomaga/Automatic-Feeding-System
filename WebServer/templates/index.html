@@ -20,7 +20,7 @@
                     system state
                 </div>
                 <div>
-                    <div class="button" onclick="state()">{{ system_state }}</div>
+                    <div class="button" onclick="state()" id="system_state">{{ system_state }}</div>
                 </div>
             </div>
             <div class="row">
@@ -38,7 +38,7 @@
                 <div>
                     TEMP0
                 </div>
-                <div>
+                <div id="temp0">
                 {{temp0}} ℃
                 </div>
                 
@@ -47,7 +47,7 @@
                 <div>
                     TEMP1
                 </div>
-                <div>
+                <div id="temp1">
                 {{temp1}} ℃
                 </div>
                 
@@ -56,7 +56,7 @@
                 <div>
                     TEMP2
                 </div>
-                <div>
+                <div id="temp2">
                 {{temp2}} ℃
                 </div>
                 
@@ -65,7 +65,7 @@
                 <div>
                     Birds
                 </div>
-                <div>
+                <div id="bird_count">
                 {{Birds}} Birds
                 </div>
                 
@@ -113,7 +113,11 @@
             document.getElementById('pumpspeed_input_temp').value = {{pump_set}}
             document.getElementById('cooler_input_temp').value = {{cooler_set}}
             document.getElementById('heater_input_temp').value = {{heater_set}}
-        };
+
+            const interval = setInterval(function() {
+                refresh() // Automatically refresh every given interval
+            }, 1000)
+        }
 
         function refresh(){
             var xmlhttp = new XMLHttpRequest();
@@ -121,9 +125,20 @@
 
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
-                    var myArr = JSON.parse(this.responseText);
-                    console.log("Update")
-                    location.reload();
+                    var data = JSON.parse(this.responseText);
+                    //console.log(data)
+
+                    // Update all variables
+                    document.getElementById('system_state').innerHTML = data.system_on?"ON":"OFF"
+                    document.getElementById('temp0').innerHTML = data.temp0 + " ℃"
+                    document.getElementById('temp1').innerHTML = data.temp1 + " ℃"
+                    document.getElementById('temp2').innerHTML = data.temp2 + " ℃"
+                    document.getElementById('bird_count').innerHTML = data.Birds + " Birds"
+                    
+                    // Dont update input variables
+                    //document.getElementById('pumpspeed_input_temp').value = data.pump_set
+                    //document.getElementById('cooler_input_temp').value = data.cooler_set
+                    //document.getElementById('heater_input_temp').value = data.heater_set
                 }
             };
             xmlhttp.open("GET", url, true);
@@ -139,8 +154,7 @@
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var myArr = JSON.parse(this.responseText);
-                    console.log("Got response")
-                    location.reload();
+                    refresh()
                 }
             };
             xmlhttp.open("POST", url, true);
@@ -155,8 +169,7 @@
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var myArr = JSON.parse(this.responseText);
-                    console.log("Got response")
-                    location.reload();
+                    refresh()
                 }
             };
             xmlhttp.open("POST", url, true);
@@ -171,8 +184,7 @@
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var myArr = JSON.parse(this.responseText);
-                    console.log("Got response")
-                    location.reload();
+                    refresh()
                 }
             };
             xmlhttp.open("POST", url, true);
@@ -180,21 +192,6 @@
             xmlhttp.send(data);
         }
 
-        // function clickButton(){
-        //     var xmlhttp = new XMLHttpRequest();
-        //     var url = "/debug";
-
-        //     xmlhttp.onreadystatechange = function() {
-        //         if (this.readyState == 4 && this.status == 200) {
-        //             var myArr = JSON.parse(this.responseText);
-        //             console.log("Got response")
-        //             location.reload();
-        //         }
-        //     };
-        //     xmlhttp.open("GET", url, true);
-        //     xmlhttp.setRequestHeader("Content-Type", "application/json");
-        //     xmlhttp.send();
-        // }
         function state(){
             var xmlhttp = new XMLHttpRequest();
             var url = "/state";
@@ -202,8 +199,7 @@
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var myArr = JSON.parse(this.responseText);
-                    console.log("Got response")
-                    location.reload();
+                    refresh()
                 }
             };
             xmlhttp.open("GET", url, true);
@@ -218,7 +214,8 @@
                 if (this.readyState == 4 && this.status == 200) {
                     var myArr = JSON.parse(this.responseText);
                     console.log("Robot go success")
-                    location.reload();
+                    semiAutomaticGo()
+                    refresh()
                 }
             };
             xmlhttp.open("GET", url, true);
@@ -234,12 +231,37 @@
                 if (this.readyState == 4 && this.status == 200) {
                     var myArr = JSON.parse(this.responseText);
                     console.log("Robot back success")
-                    location.reload();
+                    refresh()
                 }
             };
             xmlhttp.open("GET", url, true);
             xmlhttp.setRequestHeader("Content-Type", "application/json");
             xmlhttp.send();
+        }
+
+        function semiAutomaticGo(){
+            // Optional: Runs semi automatic stack after GO is triggered
+            // Ideally, should be done on server side
+            console.log("Semi automatic start")
+            setTimeout(function(){ 
+                // Start pump after delay
+                console.log("Enable Pump")
+                setPumpSpeed(80)
+                setTimeout(function(){ 
+                    // Stop pump after delay
+                    console.log("Disable Pump")
+                    setPumpSpeed(0)
+                    setTimeout(function(){ 
+                        // Return Arm after delay
+                        console.log("Return Arm")
+                        setPumpSpeed(0)
+                        RobotBack()
+
+                    }, 900);
+
+                }, 3000);
+
+             }, 1700);
         }
     
     </script>

@@ -3,10 +3,16 @@ import os
 import time
 sys.path.insert(0, os.path.join('..', 'SerialCommunicationProtocol'))
 sys.path.insert(0, os.path.join('..', 'Arduino-ARM'))
+
+# Adding abolsute path
+sys.path.insert(0, os.path.join('/', 'home', 'pi', 'Documents', 'Automatic-Feeding-System','SerialCommunicationProtocol'))
+sys.path.insert(0, os.path.join('/', 'home', 'pi', 'Documents', 'Automatic-Feeding-System','Arduino-ARM'))
+
 from SerialProtocolSimple import SerialProtocol
 from ArmController import ArmController
 
 from flask import Flask, render_template, request,jsonify
+from random import randrange
 
 app = Flask(__name__)
 
@@ -14,7 +20,7 @@ system_variables={
     'temp0'     : 0,
     'temp1'     : 0,
     'temp2'     : 0,
-    'cooler_set': 0,
+    'cooler_set': 40,
     'heater_set': 0,
     'pump_set'  : 0,
     'system_on' : False,
@@ -28,16 +34,16 @@ MAX_PUMP_SPEED = 100
 
 # PIC
 protocol = None
-pic_port = '/dev/ttyACM0'
+pic_port = '/dev/ttyUSB0'
 pic_brate = 9600
 pic_verbose = False
 
 # Arm Controller
 arm_controller = None
-arm_port = '/dev/ttyACM1'
+arm_port = '/dev/ttyACM0'
 arm_brate = 115200
-robot_home_position = [90,165,50,90,0]
-robot_bird_position = [30,90,100,90,0]
+robot_home_position = [90,165,50,90,80]
+robot_bird_position = [30,110,75,90,170]
 
 def initialize():
     global protocol, pic_port, pic_brate, pic_verbose
@@ -50,7 +56,30 @@ def initialize():
         arm_controller = ArmController(robot_home_position, arm_port, arm_brate)
         arm_controller.start()
 
-        app.run(debug=True, host="localhost", port=5000, use_reloader=False)
+        # Set Initial Values on PIC
+        if protocol:
+            # Pump speed
+            actual_speed = system_variables['pump_set']+1
+            if actual_speed > 100:
+                actual_speed = 100
+            protocol.put_command('CPS', actual_speed)
+            time.sleep(0.2)
+
+            # Cooling temperature
+            actual_temp = system_variables['cooler_set']+20
+            protocol.put_command('CCT', actual_temp)
+            time.sleep(0.2)
+
+            # Heating temperature
+            actual_temp = system_variables['heater_set']+20
+            protocol.put_command('CHT', actual_temp)
+            time.sleep(0.2)
+
+        # Update current temperatures
+        update()
+
+        # Start server
+        app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
 
     except KeyboardInterrupt:
         print("Keyboard interrupt")
@@ -98,7 +127,9 @@ def setPumpSpeed():
     actual_speed = system_variables['pump_set']+1
     if actual_speed > 100:
         actual_speed = 100
-    protocol.put_command('CPS', actual_speed)
+
+    if protocol:
+        protocol.put_command('CPS', actual_speed)
 
     return jsonify({
         'result':'ok'
@@ -147,7 +178,8 @@ def set_cooler_temp():
     system_variables['cooler_set'] = clamp(int(request.json['value']), MIN_TEMP, MAX_TEMP)
 
     actual_temp = system_variables['cooler_set']+20
-    protocol.put_command('CCT', actual_temp)
+    if protocol:
+        protocol.put_command('CCT', actual_temp)
 
     return jsonify({
         'result':'ok'
@@ -161,7 +193,8 @@ def set_Heater_temp():
     system_variables['heater_set'] = clamp(int(request.json['value']), MIN_TEMP, MAX_TEMP)
 
     actual_temp = system_variables['heater_set']+20
-    protocol.put_command('CHT', actual_temp)
+    if protocol:
+        protocol.put_command('CHT', actual_temp)
 
     return jsonify({
         'result':'ok'
@@ -169,10 +202,9 @@ def set_Heater_temp():
 
 @app.route('/update', methods = ['GET'])
 def updateRoute():
+    global system_variables
     update()
-    return jsonify({
-        'result':'ok'
-    })
+    return jsonify(system_variables)
 
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
@@ -180,11 +212,18 @@ def clamp(n, minn, maxn):
 def update():
     global protocol, system_variables
 
-    protocol.put_command('IWR', 1)
-    time.sleep(0.2)
-    system_variables['temp0'] = protocol.temp0[0] -20
-    system_variables['temp1'] = protocol.temp1[0] -20
-    system_variables['temp2'] = protocol.temp2[0] -20
+    if protocol:
+        protocol.put_command('IWR', 1)
+        time.sleep(0.2)
+        system_variables['temp0'] = protocol.temp0[0] -20
+        system_variables['temp1'] = protocol.temp1[0] -20
+        system_variables['temp2'] = protocol.temp2[0] -20
+
+    # Execution without PIC, use dummy values
+    else:
+        system_variables['temp0'] = randrange(100) - 20
+        system_variables['temp1'] = randrange(100) - 20
+        system_variables['temp2'] = randrange(100) - 20
 
 if __name__ == "__main__":
     initialize()
